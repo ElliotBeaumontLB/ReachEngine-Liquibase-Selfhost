@@ -1,0 +1,36 @@
+---
+- name: Update DNS via /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ hostvars['xsd-host']['ansible_default_ipv4']['address'] }} www.liquibase.org"
+    regexp: '.*www\.liquibase\.org.*'
+    state: present
+    insertbefore: '# For ReachEngine to start up correctly.'
+
+- name: Copy SSL certificate to the xsd-client
+  copy: 
+    src: "{{ playbook_dir }}/xsd-hosting.crt"
+    dest: "{{ ssl.cert.client.location | default('/etc/reachengine/xsd') }}/xsd-hosting.crt"
+    mode: 644
+    backup: yes
+
+- name: Add the certificate after finding the keystore location
+  block:
+  - name: Find the keystore for webapps
+    shell: grep '^Environment=JAVA_HOME=' /etc/systemd/system/reachengine.service | cut -d '=' -f 3
+    register: java_home
+    when: 'webapps' in group_names
+
+  - name: Find the keystore for runtimes
+    shell: grep '^Environment=JAVA_HOME=' /etc/systemd/system/wferuntime.service | cut -d '=' -f 3
+    register: java_home
+    when: 'runtimes' in group_names
+  
+  - name: Set java_cacerts location
+    set_fact:
+      java_ca_certs: "{{ java_home }}"/jre/lib/security/cacerts
+
+  - name: Import the certificate into the java keystore
+    command: >
+      keytool -import -alias xsd -file "{{ ssl.cert.client.location }}" -keystore "{{ java_ca_certs }}" -storepass changeit -noprompt
+  when: "'webapps' in group_names or 'runtimes' in group_names"

@@ -1,0 +1,19 @@
+#  These are the variables for the provision xsd host playbook
+#  Descriptions will be formated like this, with two spaces.
+#  The provided variable's values are the default values.
+#  Required variables are uncommented.
+#  Optional variables are commented.
+#
+#  The hosts file currently needs to be IP address only.  
+#  Hostnames will not work due to the firewall configuration. 
+
+
+#  Firewalld zone to apply new firewall rules to all traffic on port 443
+#firewalld.zone=reach
+
+#  Directory to store the ssl key file    on the xsd-hosting server (no traling slash)
+ssl.key.location=/etc/nginx/ssl
+#  Directory to store the ssl certificate on the xsd-hosting server (no traling slash)
+ssl.cert.location=/etc/nginx/ssl
+#  Directory to store the ssl certificate on the xsd-client  server (no traling slash)
+ssl.cert.client.location=/etc/reachengine/xsd

@@ -1,0 +1,61 @@
+---
+- name: Gather facts about all services
+  ansible.builtin.service_facts:
+
+- name: Install nginx and openssl on xsd-host
+  yum: 
+    name: 
+      - nginx
+      - openssl
+    state: latest
+
+- name: Configure nginx service on xsd-host
+  block: 
+  - name: Copy the SSL certificate to the xsd host
+    copy: 
+      src: "{{ playbook_dir }}/xsd-hosting.crt"
+      dest: "{{ ssl.cert.location | default('/etc/nginx/ssl') }}"/xsd-hosting.crt
+      owner: root
+      group: root
+      mode: 0600
+      backup: yes
+  
+  - name: Copy the SSL certificate to the xsd host
+    copy: 
+      src: "{{ playbook_dir }}/xsd-hosting.key"
+      dest: "{{ ssl.key.location | default('/etc/nginx/ssl') }}"/xsd-hosting.key
+      owner: root
+      group: root
+      mode: 0400
+      backup: yes
+
+  - name: Place nginx xsd-hosting.conf file
+    template:
+      src: xsd-hosting.conf.j2
+      dest: /etc/nginx/conf.d/xsd-hosting.conf
+      force: yes
+      mode: 0664
+  
+  - name: Start nginx service
+    ansible.builtin.systemd:
+      name: nginx
+      state: restarted
+      enabled: true
+
+
+- name: Configure Firewall rules on xsd-host
+  - name: Gather xsd-client IP addresses for xsd-host firewall rules
+    set_fact:
+      xsd_client_ips: "{{ groups['webapp'] + groups['runtime'] }}"
+    run_once: true
+
+  - name: Allow xsd-client hosts in firewalld
+    firewalld:
+      source: "{{ item }}"
+      service: https
+      state: enabled
+      zone: "{{ firewalld.zone | default('reach') }}"
+      immediate: yes
+      permanent: yes
+    loop: "{{ xsd_client_ips }}"
+  when: ansible_facts.services['firewalld.service'].state == 'running'

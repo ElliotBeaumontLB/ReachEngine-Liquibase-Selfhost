@@ -1,0 +1,10 @@
+---
+- hosts: xsd-hoster
+  become: yes
+  roles:
+    - xsd-hoster/uninstall
+
+- hosts: webapp:runtime
+  become: yes
+  roles:
+    - xsd-client/uninstall

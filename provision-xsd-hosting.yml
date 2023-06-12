@@ -1,0 +1,17 @@
+---
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Generate a self-signed SSL certificate locally
+      include_tasks: roles/cert_gen/tasks/main.yml
+
+- hosts: xsd-host
+  become: yes
+  roles:
+    - xsd-host/install
+
+- hosts: webapp:runtime
+  become: yes
+  gather_facts: True
+  roles:
+    - xsd-client/install

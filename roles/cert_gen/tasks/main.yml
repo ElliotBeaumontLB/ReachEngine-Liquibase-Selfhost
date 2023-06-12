@@ -1,0 +1,17 @@
+---
+- name: Generate a Self-Signed SSL Certificate
+  openssl_certificate:
+    path: "{{ playbook_dir }}/xsd-hosting.crt"
+    privatekey_path: "{{ playbook_dir }}/xsd-hosting.key"
+    csr_path: "{{ playbook_dir }}/xsd-hosting.csr"
+    provider: selfsigned
+    state: present
+    force: true
+    subject:
+      commonName: www.liquibase.org
+      organizationName: ReachEngineOps
+      organizationalUnitName: Signiant
+      localityName: Denver
+      stateOrProvinceName: CO
+      countryName: US
+  delegate_to: localhost

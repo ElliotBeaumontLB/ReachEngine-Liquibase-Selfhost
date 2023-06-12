@@ -1,0 +1,10 @@
+server {
+    listen 443 ssl;
+    server_name www.liquibase.org;
+    ssl_certificate "{{ ssl.cert.location }}"/xsd-hosting.crt;
+    ssl_certificate_key "{{ ssl.key.location }}"/xsd-hosting.key;
+
+    location /xml/ns/dbchangelog/dbchangelog-3.1.xsd {
+        alias /etc/reachengine/dbchangelog-3.1.xsd;
+    }
+}
