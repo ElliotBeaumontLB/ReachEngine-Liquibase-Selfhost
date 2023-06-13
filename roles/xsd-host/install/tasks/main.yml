@@ -44,6 +44,7 @@
 
 
 - name: Configure Firewall rules on xsd-host
+  block: 
   - name: Gather xsd-client IP addresses for xsd-host firewall rules
     set_fact:
       xsd_client_ips: "{{ groups['webapp'] + groups['runtime'] }}"
